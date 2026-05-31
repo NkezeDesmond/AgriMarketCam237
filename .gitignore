@@ -8,3 +8,5 @@ test-results
 playwright-report
 coverage
 *.tsbuildinfo
+git_report*.txt
+git_reports_index.json

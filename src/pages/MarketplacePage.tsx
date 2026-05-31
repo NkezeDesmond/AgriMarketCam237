@@ -26,15 +26,23 @@ export function MarketplacePage() {
   const [priceMax, setPriceMax] = useState<string>("");
   const [sort, setSort] = useState<"newest" | "price_low" | "price_high">("newest");
 
-  const filter: ListingsFilter = useMemo(
-    () => ({
-      search: search.trim() || undefined,
-      cropType: cropType.trim() || undefined,
-      region: region.trim() || undefined,
-      priceMaxXaf: priceMax.trim().length ? Number(priceMax) : undefined
-    }),
-    [cropType, priceMax, region, search]
-  );
+  const filter: ListingsFilter = useMemo(() => {
+    const next: ListingsFilter = {};
+
+    const s = search.trim();
+    if (s) next.search = s;
+
+    const c = cropType.trim();
+    if (c) next.cropType = c;
+
+    const r = region.trim();
+    if (r) next.region = r;
+
+    const p = priceMax.trim();
+    if (p.length) next.priceMaxXaf = Number(priceMax);
+
+    return next;
+  }, [cropType, priceMax, region, search]);
 
   const listingsQuery = useQuery({
     queryKey: ["listings", filter],

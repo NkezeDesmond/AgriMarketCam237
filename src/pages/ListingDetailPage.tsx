@@ -29,7 +29,7 @@ function isUuid(value: string): boolean {
 export function ListingDetailPage() {
   const navigate = useNavigate();
   const params = useParams();
-  const id = params.id ?? "";
+  const id = params["id"] ?? "";
   const validId = isUuid(id);
   const online = useOnlineStatus();
   const user = useAuthStore((s) => s.user);

@@ -48,7 +48,24 @@ export type Database = {
           created_at?: string;
           updated_at?: string;
         };
-        Update: Partial<Database["public"]["Tables"]["profiles"]["Insert"]>;
+        Update: {
+          id?: string;
+          role?: UserRole | null;
+          phone_e164?: string | null;
+          display_name?: string | null;
+          first_name?: string | null;
+          last_name?: string | null;
+          avatar_url?: string | null;
+          region?: string | null;
+          commune?: string | null;
+          address?: string | null;
+          references_text?: string | null;
+          verified?: boolean;
+          suspended?: boolean;
+          onboarded?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
         Relationships: [];
       };
       listings: {
@@ -71,12 +88,44 @@ export type Database = {
           created_at: string;
           updated_at: string;
         };
-        Insert: Omit<Database["public"]["Tables"]["listings"]["Row"], "id" | "created_at" | "updated_at"> & {
+        Insert: {
           id?: string;
+          farmer_id: string;
+          title: string;
+          crop_type: string;
+          description?: string | null;
+          quantity: number;
+          unit: string;
+          price_xaf: number;
+          harvest_date?: string | null;
+          expiry_date?: string | null;
+          region: string;
+          commune: string;
+          location?: { lat: number; lng: number } | null;
+          image_urls?: string[];
+          status?: ListingStatus;
           created_at?: string;
           updated_at?: string;
         };
-        Update: Partial<Database["public"]["Tables"]["listings"]["Insert"]>;
+        Update: {
+          id?: string;
+          farmer_id?: string;
+          title?: string;
+          crop_type?: string;
+          description?: string | null;
+          quantity?: number;
+          unit?: string;
+          price_xaf?: number;
+          harvest_date?: string | null;
+          expiry_date?: string | null;
+          region?: string;
+          commune?: string;
+          location?: { lat: number; lng: number } | null;
+          image_urls?: string[];
+          status?: ListingStatus;
+          created_at?: string;
+          updated_at?: string;
+        };
         Relationships: [];
       };
       orders: {
@@ -93,12 +142,32 @@ export type Database = {
           created_at: string;
           updated_at: string;
         };
-        Insert: Omit<Database["public"]["Tables"]["orders"]["Row"], "id" | "created_at" | "updated_at"> & {
+        Insert: {
           id?: string;
+          listing_id: string;
+          buyer_id: string;
+          farmer_id: string;
+          quantity: number;
+          price_xaf: number;
+          status?: OrderStatus;
+          payment_method?: PaymentMethod | null;
+          payment_status?: PaymentStatus;
           created_at?: string;
           updated_at?: string;
         };
-        Update: Partial<Database["public"]["Tables"]["orders"]["Insert"]>;
+        Update: {
+          id?: string;
+          listing_id?: string;
+          buyer_id?: string;
+          farmer_id?: string;
+          quantity?: number;
+          price_xaf?: number;
+          status?: OrderStatus;
+          payment_method?: PaymentMethod | null;
+          payment_status?: PaymentStatus;
+          created_at?: string;
+          updated_at?: string;
+        };
         Relationships: [];
       };
       order_events: {
@@ -111,8 +180,24 @@ export type Database = {
           note: string | null;
           created_at: string;
         };
-        Insert: Omit<Database["public"]["Tables"]["order_events"]["Row"], "id" | "created_at"> & { id?: string; created_at?: string };
-        Update: Partial<Database["public"]["Tables"]["order_events"]["Insert"]>;
+        Insert: {
+          id?: string;
+          order_id: string;
+          actor_id?: string | null;
+          from_status?: string | null;
+          to_status: string;
+          note?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          order_id?: string;
+          actor_id?: string | null;
+          from_status?: string | null;
+          to_status?: string;
+          note?: string | null;
+          created_at?: string;
+        };
         Relationships: [];
       };
       market_prices: {
@@ -125,11 +210,24 @@ export type Database = {
           source: string | null;
           created_at: string;
         };
-        Insert: Omit<Database["public"]["Tables"]["market_prices"]["Row"], "id" | "created_at"> & {
+        Insert: {
           id?: string;
+          crop_type: string;
+          region: string;
+          price_xaf: number;
+          captured_at: string;
+          source?: string | null;
           created_at?: string;
         };
-        Update: Partial<Database["public"]["Tables"]["market_prices"]["Insert"]>;
+        Update: {
+          id?: string;
+          crop_type?: string;
+          region?: string;
+          price_xaf?: number;
+          captured_at?: string;
+          source?: string | null;
+          created_at?: string;
+        };
         Relationships: [];
       };
       conversations: {
@@ -139,11 +237,18 @@ export type Database = {
           participant_high: string;
           created_at: string;
         };
-        Insert: Omit<Database["public"]["Tables"]["conversations"]["Row"], "id" | "created_at"> & {
+        Insert: {
           id?: string;
+          participant_low: string;
+          participant_high: string;
           created_at?: string;
         };
-        Update: Partial<Database["public"]["Tables"]["conversations"]["Insert"]>;
+        Update: {
+          id?: string;
+          participant_low?: string;
+          participant_high?: string;
+          created_at?: string;
+        };
         Relationships: [];
       };
       messages: {
@@ -156,11 +261,24 @@ export type Database = {
           created_at: string;
           read_at: string | null;
         };
-        Insert: Omit<Database["public"]["Tables"]["messages"]["Row"], "id" | "created_at"> & {
+        Insert: {
           id?: string;
+          conversation_id: string;
+          sender_id: string;
+          recipient_id: string;
+          body: string;
           created_at?: string;
+          read_at?: string | null;
         };
-        Update: Partial<Database["public"]["Tables"]["messages"]["Insert"]>;
+        Update: {
+          id?: string;
+          conversation_id?: string;
+          sender_id?: string;
+          recipient_id?: string;
+          body?: string;
+          created_at?: string;
+          read_at?: string | null;
+        };
         Relationships: [];
       };
       push_subscriptions: {
@@ -174,12 +292,26 @@ export type Database = {
           created_at: string;
           updated_at: string;
         };
-        Insert: Omit<Database["public"]["Tables"]["push_subscriptions"]["Row"], "id" | "created_at" | "updated_at"> & {
+        Insert: {
           id?: string;
+          user_id: string;
+          endpoint: string;
+          p256dh: string;
+          auth: string;
+          user_agent?: string | null;
           created_at?: string;
           updated_at?: string;
         };
-        Update: Partial<Database["public"]["Tables"]["push_subscriptions"]["Insert"]>;
+        Update: {
+          id?: string;
+          user_id?: string;
+          endpoint?: string;
+          p256dh?: string;
+          auth?: string;
+          user_agent?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
         Relationships: [];
       };
       reviews: {
@@ -193,11 +325,26 @@ export type Database = {
           comment: string | null;
           created_at: string;
         };
-        Insert: Omit<Database["public"]["Tables"]["reviews"]["Row"], "id" | "created_at"> & {
+        Insert: {
           id?: string;
+          listing_id: string;
+          order_id?: string | null;
+          reviewer_id: string;
+          reviewee_id: string;
+          rating: number;
+          comment?: string | null;
           created_at?: string;
         };
-        Update: Partial<Database["public"]["Tables"]["reviews"]["Insert"]>;
+        Update: {
+          id?: string;
+          listing_id?: string;
+          order_id?: string | null;
+          reviewer_id?: string;
+          reviewee_id?: string;
+          rating?: number;
+          comment?: string | null;
+          created_at?: string;
+        };
         Relationships: [];
       };
     };
