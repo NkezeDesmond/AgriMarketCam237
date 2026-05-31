@@ -355,6 +355,7 @@ export type Database = {
           avg_rating: number;
           rating_count: number;
         };
+        Relationships: [];
       };
       listing_rating_summary: {
         Row: {
@@ -362,6 +363,7 @@ export type Database = {
           avg_rating: number;
           rating_count: number;
         };
+        Relationships: [];
       };
     };
     Functions: {
