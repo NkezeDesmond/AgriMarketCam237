@@ -217,7 +217,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     if (!user) throw new Error("Not signed in");
     set({ loading: true, error: null });
     try {
-      const { error } = await supabase.from("profiles").update(patch).eq("id", user.id);
+      const { error } = await supabase.from("profiles").update(patch as any).eq("id", user.id);
       if (error) throw error;
       await get().refreshProfile();
     } catch (e) {

@@ -1,7 +1,7 @@
 import "leaflet/dist/leaflet.css";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { MapContainer, Marker, TileLayer, useMapEvents } from "react-leaflet";
 import { useNavigate } from "react-router-dom";
@@ -60,7 +60,7 @@ export function CreateListingPage() {
   const [uploadProgress, setUploadProgress] = useState<{ done: number; total: number } | null>(null);
 
   const form = useForm<FormValues>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema) as unknown as Resolver<FormValues>,
     defaultValues: {
       title: "",
       crop_type: "",
@@ -140,7 +140,7 @@ export function CreateListingPage() {
                     hasLocation: Boolean(loc),
                     region: values["region"],
                     commune: values["commune"],
-                    crop_type: values.crop_type
+                    crop_type: values["crop_type"]
                   }
                 });
                 // #endregion
@@ -151,9 +151,9 @@ export function CreateListingPage() {
                     createdAt: Date.now(),
                     payload: {
                       farmer_id: user.id,
-                      title: values.title,
-                      crop_type: values.crop_type,
-                      description: values.description ?? null,
+                      title: values["title"],
+                      crop_type: values["crop_type"],
+                      description: values["description"] ?? null,
                       quantity: values["quantity"],
                       unit: values["unit"],
                       price_xaf: values["price_xaf"],
@@ -194,9 +194,9 @@ export function CreateListingPage() {
                 // #endregion
                 const listingId = await createListing({
                   farmer_id: user.id,
-                  title: values.title,
-                  crop_type: values.crop_type,
-                  description: values.description ?? null,
+                  title: values["title"],
+                  crop_type: values["crop_type"],
+                  description: values["description"] ?? null,
                   quantity: values["quantity"],
                   unit: values["unit"],
                   price_xaf: values["price_xaf"],

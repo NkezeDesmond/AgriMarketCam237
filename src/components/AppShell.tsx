@@ -130,8 +130,8 @@ export function AppShell() {
       (window as any).requestIdleCallback(run, { timeout: 1500 });
       return;
     }
-    const id = window.setTimeout(run, 800);
-    return () => window.clearTimeout(id);
+    const id = setTimeout(run, 800);
+    return () => clearTimeout(id);
   }, [profile]);
 
   useEffect(() => {
@@ -165,9 +165,9 @@ export function AppShell() {
           const body = String(msg.body ?? "");
           void (async () => {
             const { data } = await supabase.from("profiles").select("display_name").eq("id", senderId).maybeSingle();
-            const name = (data?.display_name ?? "").trim() || `User ${senderId.slice(0, 6)}`;
+            const name = String((data as any)?.display_name ?? "").trim() || `User ${senderId.slice(0, 6)}`;
             setMessageAlert({ fromId: senderId, fromName: name, body });
-            window.setTimeout(() => setMessageAlert(null), 7000);
+            setTimeout(() => setMessageAlert(null), 7000);
           })();
           void qc.invalidateQueries({ queryKey: ["unread-messages-count", user.id] });
           void qc.invalidateQueries({ queryKey: ["conversations", user.id] });
