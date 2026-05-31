@@ -56,8 +56,8 @@ export async function createListing(input: CreateListingInput): Promise<string> 
   const uploadedPaths: string[] = [];
 
   try {
-    for (let i = 0; i < imageBlobs.length; i++) {
-      const blob = imageBlobs[i];
+    for (const [i, blob] of imageBlobs.entries()) {
+      if (!blob) throw new Error("Missing image blob");
       const ext = blob.type === "image/png" ? "png" : blob.type === "image/webp" ? "webp" : "jpg";
       const id =
         typeof globalThis.crypto !== "undefined" && "randomUUID" in globalThis.crypto
