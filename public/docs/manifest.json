@@ -1,0 +1,40 @@
+{
+  "documents": [
+    {
+      "id": "blueprint",
+      "title": "AgriMarket Cameroon Blueprint",
+      "type": "text",
+      "path": "/docs/blueprint.md"
+    },
+    {
+      "id": "system-design",
+      "title": "System Design Document",
+      "type": "text",
+      "path": "/docs/system-design.md"
+    },
+    {
+      "id": "database",
+      "title": "Database + RLS Reference",
+      "type": "text",
+      "path": "/docs/database-rls.md"
+    },
+    {
+      "id": "storage-policies",
+      "title": "Storage Policies (listing-images)",
+      "type": "text",
+      "path": "/docs/storage-policies.sql"
+    },
+    {
+      "id": "supabase-setup",
+      "title": "Supabase Setup Checklist",
+      "type": "text",
+      "path": "/docs/supabase-setup.md"
+    },
+    {
+      "id": "deployment",
+      "title": "Deployment Checklist (Vercel)",
+      "type": "text",
+      "path": "/docs/deployment.md"
+    }
+  ]
+}
