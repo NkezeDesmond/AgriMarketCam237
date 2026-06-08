@@ -33,7 +33,7 @@ export function AdminSetupPage() {
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="text-sm text-muted-foreground">
-            If your phone number is in the admin allowlist, you can enable admin access on this device.
+            If your phone number or email is in the admin allowlist, you can enable admin access on this device.
           </div>
           {error ? <div className="text-sm text-destructive">{error}</div> : null}
           <Button
