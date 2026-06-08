@@ -50,7 +50,8 @@ export function AuthPage() {
   const loading = useAuthStore((s) => s.loading);
   const error = useAuthStore((s) => s.error);
 
-  const [method, setMethod] = useState<"email" | "phone">("phone");
+  const initialMethod = params.get("method") === "email" ? "email" : "phone";
+  const [method, setMethod] = useState<"email" | "phone">(initialMethod);
   const [phoneStep, setPhoneStep] = useState<"request" | "verify">("request");
   const [phoneE164, setPhoneE164] = useState<string>("");
   const [emailSentTo, setEmailSentTo] = useState<string>("");
@@ -88,7 +89,11 @@ export function AuthPage() {
     if (!initialized) return;
     if (!user) return;
     if (!profile) return;
-    if (!profile.onboarded) {
+    if (!profile.onboarded && profile.role !== "admin") {
+      if (redirectTo === "/admin-setup") {
+        navigate(`/admin-setup`, { replace: true });
+        return;
+      }
       navigate(`/onboarding${redirectTo ? `?redirect=${encodeURIComponent(redirectTo)}` : ""}`, { replace: true });
       return;
     }
