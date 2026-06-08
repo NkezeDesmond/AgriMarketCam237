@@ -46,6 +46,7 @@ function RequireOnboarded({ children }: { children: ReactNode }) {
     const next = `${location.pathname}${location.search}`;
     return <Navigate to={`/auth?redirect=${encodeURIComponent(next)}`} replace />;
   }
+  if (profile.role === "admin") return <>{children}</>;
   if (!profile.onboarded) {
     const next = `${location.pathname}${location.search}`;
     return <Navigate to={`/onboarding?redirect=${encodeURIComponent(next)}`} replace />;
@@ -174,9 +175,7 @@ export const router = createBrowserRouter([
         path: "admin-setup",
         element: (
           <RequireAuth>
-            <RequireOnboarded>
-              <AdminSetupPage />
-            </RequireOnboarded>
+            <AdminSetupPage />
           </RequireAuth>
         )
       },
