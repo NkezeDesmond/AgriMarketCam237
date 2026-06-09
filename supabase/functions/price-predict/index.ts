@@ -37,6 +37,7 @@ serve(async (req) => {
   if (req.method !== "POST") return jsonResponse({ error: "Method not allowed" }, 405);
 
   const apiKey = Deno.env.get("GEMINI_API_KEY");
+  const model = Deno.env.get("GEMINI_MODEL") || "gemini-2.5-flash";
   if (!apiKey) return jsonResponse({ error: "Missing GEMINI_API_KEY" }, 500);
 
   const body = await req.json().catch(() => null);
@@ -62,7 +63,7 @@ serve(async (req) => {
   ].join("\n");
 
   try {
-    const raw = await callGemini("gemini-1.5-flash", apiKey, prompt);
+    const raw = await callGemini(model, apiKey, prompt);
     const parsed = JSON.parse(raw);
     return jsonResponse(parsed, 200);
   } catch (e) {
@@ -70,4 +71,3 @@ serve(async (req) => {
     return jsonResponse({ error: message }, 500);
   }
 });
-
