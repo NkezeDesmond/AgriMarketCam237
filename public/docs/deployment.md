@@ -11,6 +11,7 @@ Supabase settings
 - Storage: bucket listing-images exists, and storage.objects policies applied (listing_images_*)
 - Edge Function secrets set:
   - GEMINI_API_KEY
+  - GEMINI_MODEL (optional, AI Edge Functions default to gemini-2.5-flash)
   - ADMIN_PHONE_ALLOWLIST
 - Realtime replication enabled for: orders, messages, conversations
 - Auth (Phone):
@@ -29,3 +30,6 @@ Post-deploy smoke test
 - /docs loads + opens PDFs/text
 - Install as PWA and verify offline browse + /sync shows queued actions
 
+Note
+- Vercel `.env` / frontend env vars do not power Supabase Edge Functions.
+- AI keys for advisory-chat and price-predict must be stored in Supabase Edge Function secrets.

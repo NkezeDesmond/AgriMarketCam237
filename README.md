@@ -34,6 +34,8 @@ Set:
 - `VITE_SUPABASE_ANON_KEY`
 - `VITE_FIGMA_EMBED_URL` (optional)
 
+Note: root `.env` is for frontend Vite variables only. Gemini keys used by advisory-chat and price-predict belong in Supabase Edge Function secrets, not in the frontend `.env`.
+
 3. Run the app
 
 ```bash
@@ -78,6 +80,7 @@ npm run supabase:bootstrap
 Set in Supabase Dashboard → Edge Functions → Secrets:
 
 - `GEMINI_API_KEY`
+- `GEMINI_MODEL` (optional, AI Edge Functions default to `gemini-2.5-flash`)
 - `ADMIN_PHONE_ALLOWLIST` (comma-separated E.164 phone numbers, e.g. +2376xxxxxxxx,+2376yyyyyyyy)
 
 ## Supabase schema + RLS
@@ -121,6 +124,7 @@ Edge functions are implemented as:
 They require Supabase secrets:
 
 - `GEMINI_API_KEY`
+- `GEMINI_MODEL` (optional, AI Edge Functions default to `gemini-2.5-flash`)
 - `ADMIN_PHONE_ALLOWLIST` (comma-separated E.164 phone numbers, e.g. +2376xxxxxxxx)
 
 Frontend helpers:

@@ -99,7 +99,10 @@ export async function advisoryChat(input: { lang: "en" | "fr" | "pcm"; question:
       msgLower.includes("not_found") ||
       errAny.status === 404
     ) {
-      throw new Error("Farm advisory is not available yet. Deploy the Supabase Edge Function “advisory-chat” and set GEMINI_API_KEY.");
+      throw new Error("Farm advisory is not available yet. Deploy the Supabase Edge Function “advisory-chat” and set GEMINI_API_KEY in Supabase Edge Function secrets.");
+    }
+    if (msgLower.includes("missing gemini_api_key")) {
+      throw new Error("Farm advisory is missing GEMINI_API_KEY in Supabase Edge Function secrets.");
     }
     throw new Error(msg);
   }

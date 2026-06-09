@@ -6,7 +6,12 @@ Storage (images)
 
 Edge Function secrets
 - GEMINI_API_KEY: required for price-predict + advisory-chat
+- GEMINI_MODEL: optional, defaults to gemini-2.5-flash for AI Edge Functions
 - ADMIN_PHONE_ALLOWLIST: comma-separated E.164 phones, e.g. +2376XXXXXXXX,+2376YYYYYYYY
+
+Note
+- Root `.env` is for Vite frontend variables only.
+- Gemini keys for advisory-chat and price-predict must be added in Supabase Dashboard -> Edge Functions -> Secrets.
 
 Realtime (recommended)
 - Ensure Realtime is enabled for: orders, messages, conversations
