@@ -218,7 +218,7 @@ export function CartPage() {
                 ))}
               </div>
               <div className="mt-3 text-xs text-muted-foreground">
-                Payment processing is not connected yet. This records the method you plan to pay with.
+                For MTN MoMo or Orange Money, place the order first, then open Orders and tap Pay now to send the mobile money prompt.
               </div>
             </div>
 
@@ -245,4 +245,3 @@ export function CartPage() {
     </Page>
   );
 }
-

@@ -75,13 +75,19 @@ export SUPABASE_DB_URL="postgresql://postgres:YOUR_PASSWORD@db.hlajvmrynbulojoym
 npm run supabase:bootstrap
 ```
 
-### Edge Function secrets (required for AI + admin setup)
+### Edge Function secrets (required for AI + admin setup + payments)
 
 Set in Supabase Dashboard → Edge Functions → Secrets:
 
 - `GEMINI_API_KEY`
 - `GEMINI_MODEL` (optional, AI Edge Functions default to `gemini-2.5-flash`)
 - `ADMIN_PHONE_ALLOWLIST` (comma-separated E.164 phone numbers, e.g. +2376xxxxxxxx,+2376yyyyyyyy)
+- `ADMIN_EMAIL_ALLOWLIST` (comma-separated emails for admin enable)
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `CAMPAY_APP_USERNAME`
+- `CAMPAY_APP_PASSWORD`
+- `CAMPAY_BASE_URL` (optional, defaults to `https://demo.campay.net/api`)
 
 ## Supabase schema + RLS
 
@@ -120,12 +126,19 @@ Edge functions are implemented as:
 - `supabase/functions/price-predict`
 - `supabase/functions/advisory-chat`
 - `supabase/functions/admin-promote` (one-time admin setup via phone allowlist)
+- `supabase/functions/campay-payment` (Campay MTN/Orange mobile money collection)
 
 They require Supabase secrets:
 
 - `GEMINI_API_KEY`
 - `GEMINI_MODEL` (optional, AI Edge Functions default to `gemini-2.5-flash`)
 - `ADMIN_PHONE_ALLOWLIST` (comma-separated E.164 phone numbers, e.g. +2376xxxxxxxx)
+- `ADMIN_EMAIL_ALLOWLIST` (comma-separated emails)
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `CAMPAY_APP_USERNAME`
+- `CAMPAY_APP_PASSWORD`
+- `CAMPAY_BASE_URL` (optional, defaults to `https://demo.campay.net/api`)
 
 Frontend helpers:
 

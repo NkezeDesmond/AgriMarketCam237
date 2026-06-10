@@ -1,11 +1,13 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ChangeEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { requestCampayPayment, syncCampayPayment } from "../api/payments";
 import { supabase } from "../api/supabase";
 import { fetchMyOrders, fetchOrderEvents, updateOrderPaymentMethod, updateOrderStatus, type OrderWithListing } from "../api/orders";
 import { createReviewForOrder, fetchMyReviewsForOrders } from "../api/reviews";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
+import { Input } from "../components/ui/input";
 import { Link } from "react-router-dom";
 import { useOnlineStatus } from "../hooks/useOnlineStatus";
 import { enqueueAction } from "../lib/offline/db";
@@ -33,6 +35,25 @@ function paymentLabel(method: PaymentMethod): string {
   return "Mastercard";
 }
 
+function paymentStatusVariant(status: OrderWithListing["payment_status"]): "default" | "success" | "warning" | "danger" {
+  if (status === "paid") return "success";
+  if (status === "failed" || status === "refunded") return "danger";
+  if (status === "pending") return "warning";
+  return "default";
+}
+
+function paymentStatusLabel(status: OrderWithListing["payment_status"]): string {
+  if (status === "paid") return "Paid";
+  if (status === "pending") return "Payment pending";
+  if (status === "failed") return "Payment failed";
+  if (status === "refunded") return "Refunded";
+  return "Unpaid";
+}
+
+function supportsCampay(method: PaymentMethod | null): method is "mtn_momo" | "orange_money" {
+  return method === "mtn_momo" || method === "orange_money";
+}
+
 export function OrdersPage() {
   const user = useAuthStore((s) => s.user);
   const profile = useAuthStore((s) => s.profile);
@@ -45,6 +66,7 @@ export function OrdersPage() {
   const [queuedNotice, setQueuedNotice] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [actionBusyOrderId, setActionBusyOrderId] = useState<string | null>(null);
+  const [paymentPhones, setPaymentPhones] = useState<Record<string, string>>({});
   const [view, setView] = useState<"all" | "buying" | "selling">("all");
 
   const ordersQuery = useQuery({
@@ -174,6 +196,68 @@ export function OrdersPage() {
     await qc.invalidateQueries({ queryKey: ["orders", user.id] });
   }
 
+  async function requestPayment(orderId: string): Promise<void> {
+    if (!user) return;
+    if (!online) {
+      setActionError("You need an internet connection to request MTN MoMo or Orange Money payment.");
+      return;
+    }
+    const phone = (paymentPhones[orderId] ?? "").trim();
+    if (!phone) {
+      setActionError("Enter the buyer phone number before requesting payment.");
+      return;
+    }
+
+    setQueuedNotice(null);
+    setActionError(null);
+    setActionBusyOrderId(orderId);
+    try {
+      const result = await requestCampayPayment(orderId, phone);
+      if (result.phone) {
+        setPaymentPhones((prev) => ({ ...prev, [orderId]: result.phone ?? phone }));
+      }
+      setQueuedNotice(
+        result.status === "pending"
+          ? "Payment request sent. Approve it on the buyer phone, then refresh payment status."
+          : result.status === "paid"
+            ? "Payment confirmed successfully."
+            : "Payment request was created, but the provider reported a failure."
+      );
+      await qc.invalidateQueries({ queryKey: ["orders", user.id] });
+    } catch (e) {
+      setActionError(e instanceof Error ? e.message : "Failed to request payment");
+    } finally {
+      setActionBusyOrderId(null);
+    }
+  }
+
+  async function refreshPayment(orderId: string): Promise<void> {
+    if (!user) return;
+    if (!online) {
+      setActionError("You need an internet connection to refresh payment status.");
+      return;
+    }
+
+    setQueuedNotice(null);
+    setActionError(null);
+    setActionBusyOrderId(orderId);
+    try {
+      const result = await syncCampayPayment(orderId);
+      setQueuedNotice(
+        result.status === "paid"
+          ? "Payment confirmed successfully."
+          : result.status === "failed"
+            ? result.reason || "Payment failed."
+            : "Payment is still pending. Ask the buyer to approve the mobile money prompt."
+      );
+      await qc.invalidateQueries({ queryKey: ["orders", user.id] });
+    } catch (e) {
+      setActionError(e instanceof Error ? e.message : "Failed to refresh payment status");
+    } finally {
+      setActionBusyOrderId(null);
+    }
+  }
+
   useEffect(() => {
     if (!user) return;
     const channel = supabase
@@ -194,6 +278,18 @@ export function OrdersPage() {
       void supabase.removeChannel(channel);
     };
   }, [qc, user]);
+
+  useEffect(() => {
+    setPaymentPhones((prev) => {
+      const next = { ...prev };
+      for (const order of ordersQuery.data ?? []) {
+        if (!next[order.id]) {
+          next[order.id] = order.payment_phone_e164 ?? profile?.phone_e164 ?? "";
+        }
+      }
+      return next;
+    });
+  }, [ordersQuery.data, profile?.phone_e164]);
 
   return (
     <Page width="wide">
@@ -287,6 +383,7 @@ export function OrdersPage() {
                       <div className="flex items-center gap-2">
                         <Badge variant={statusVariant(o.status)}>{o.status}</Badge>
                         {o.payment_method ? <Badge variant="default">{paymentLabel(o.payment_method)}</Badge> : null}
+                        <Badge variant={paymentStatusVariant(o.payment_status)}>{paymentStatusLabel(o.payment_status)}</Badge>
                       </div>
                     </div>
 
@@ -307,6 +404,62 @@ export function OrdersPage() {
                         <div className="mt-3 text-xs text-muted-foreground">
                           Payment processing is not connected yet. This saves your preference for MVP and can be wired to a gateway later.
                         </div>
+                      </div>
+                    ) : null}
+
+                    {isBuyer && supportsCampay(o.payment_method) ? (
+                      <div className="rounded-2xl border border-border bg-background/60 p-4">
+                        <div className="flex flex-wrap items-start justify-between gap-3">
+                          <div>
+                            <div className="text-xs font-medium text-muted-foreground">Mobile money payment</div>
+                            <div className="mt-1 text-sm text-muted-foreground">
+                              Use Campay to request payment from the buyer phone for this order.
+                            </div>
+                          </div>
+                          {o.payment_reference ? (
+                            <div className="text-xs text-muted-foreground">Ref {o.payment_reference}</div>
+                          ) : null}
+                        </div>
+
+                        <div className="mt-3 grid gap-3 md:grid-cols-[minmax(0,1fr)_auto_auto]">
+                          <Input
+                            inputMode="tel"
+                            placeholder="+2376XXXXXXXX"
+                            value={paymentPhones[o.id] ?? ""}
+                            onChange={(e: ChangeEvent<HTMLInputElement>) => setPaymentPhones((prev) => ({ ...prev, [o.id]: e.target.value }))}
+                            disabled={busy || o.payment_status === "paid"}
+                          />
+                          {o.payment_status !== "paid" ? (
+                            <Button size="sm" onClick={() => void requestPayment(o.id)} disabled={busy}>
+                              {busy ? "Working…" : o.payment_status === "failed" ? "Try payment again" : "Pay now"}
+                            </Button>
+                          ) : (
+                            <Button size="sm" variant="secondary" disabled>
+                              Paid
+                            </Button>
+                          )}
+                          {(o.payment_status === "pending" || o.payment_status === "failed") ? (
+                            <Button size="sm" variant="outline" onClick={() => void refreshPayment(o.id)} disabled={busy}>
+                              {busy ? "Working…" : "Refresh payment"}
+                            </Button>
+                          ) : null}
+                        </div>
+
+                        {o.payment_status === "pending" ? (
+                          <div className="mt-3 text-xs text-muted-foreground">
+                            A payment prompt has been sent. Approve it on the phone, then click Refresh payment.
+                          </div>
+                        ) : null}
+                        {o.payment_completed_at ? (
+                          <div className="mt-3 text-xs text-muted-foreground">
+                            Paid on {new Date(o.payment_completed_at).toLocaleString()}
+                          </div>
+                        ) : null}
+                        {o.payment_error ? (
+                          <div className="mt-3 rounded-xl border border-destructive/40 bg-destructive/10 p-3 text-xs text-destructive">
+                            {o.payment_error}
+                          </div>
+                        ) : null}
                       </div>
                     ) : null}
 
